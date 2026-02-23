@@ -61,7 +61,7 @@ Perfect for **educators**, **community owners**, and **researchers** who need to
 
 ## ⚙️ Input Options
 
-### 🔗 URL Modes Four ways to scope your extraction
+### 🔗 URL Modes — Four ways to scope your extraction
 
 The actor detects what to extract automatically from the URL format:
 
@@ -83,6 +83,55 @@ You can mix multiple URLs of different types in a single run.
 }
 ```
 
+### 🔐 Authentication
+
+The actor tries authentication in priority order — stopping as soon as one method succeeds:
+
+| Priority | Method | When to use |
+|---|---|---|
+| 1 | **Email + Password** | Easiest — just enter your Skool credentials |
+| 2 | **Browser Cookies** | Fallback if login fails, or if you prefer cookie-based auth |
+| 3 | **None** | Public communities only |
+
+#### Method 1 — Email + Password (recommended)
+
+Set `email` and `password` in the actor input. The actor logs into Skool automatically, obtains a fresh session, and proceeds. Your password is stored as a secret and is never logged.
+
+```json
+{
+  "email": "you@example.com",
+  "password": "your-password"
+}
+```
+
+If login fails (wrong credentials, account issue), the actor automatically falls back to browser cookies if you also provided them.
+
+#### Method 2 — Browser Cookies (fallback)
+
+If you prefer not to share your password, or if automatic login fails, you can export your browser session cookies and paste them in.
+
+**How to get your cookies:**
+
+1. **Install the Cookie-Editor extension**
+   - [Chrome](https://chrome.google.com/webstore/detail/cookie-editor/hlkenndednhfkekhgcdicdfddnkalmdm)
+   - [Firefox](https://addons.mozilla.org/en-US/firefox/addon/cookie-editor/)
+
+2. **Log in to Skool**, then navigate to your community
+
+3. **Open Cookie-Editor** → click **Export** → copy the JSON
+
+4. **Paste into the `cookies` field** in actor input:
+
+```json
+{
+  "cookies": [
+    { "name": "auth_token", "value": "your-token-value", "domain": ".skool.com" }
+  ]
+}
+```
+
+> ⚠️ Cookies expire. If extraction fails with 403 errors, export fresh cookies and re-run.
+
 ### ⬇️ Download Options
 
 #### `downloadAttachments` (Boolean)
@@ -90,24 +139,14 @@ You can mix multiple URLs of different types in a single run.
 - Downloads images and document files (PDF, Word, Excel, etc.) attached to lesson posts
 - Saved to Key-Value Store with keys like `image-{id}.png` / `doc-{id}.pdf`
 - Each attachment in the dataset gets a `kvKey` field pointing to its stored file
-- ⚠️ Increases run time large communities may have many attachments
+- ⚠️ Increases run time — large communities may have many attachments
 
 #### `downloadResources` (Boolean)
 - **Default**: `false`
 - Downloads image and document files from the lesson resources panel
-- Web links (YouTube, Chrome extensions, etc.) are automatically skipped only actual files are downloaded
+- Web links (YouTube, Chrome extensions, etc.) are automatically skipped — only actual files are downloaded
 - Each resource gets a `kvKey` field when downloaded
 - ⚠️ Only useful if the community shares PDF guides or image files in lesson resources
-
-### 🔐 `cookies` (Array)
-- **Default**: `[]` (public content only)
-- Provide browser cookies to access private or locked courses
-- See [Authentication](#-authentication--private-content) section below
-
-### ⏱️ `requestDelayMs` (Number)
-- **Default**: `1500`
-- Delay between HTTP requests in milliseconds
-- Increase if you see rate-limit errors
 
 ---
 
@@ -191,35 +230,7 @@ You can mix multiple URLs of different types in a single run.
 ```
 
 ### Post-only output (`mode: post`)
-Returns just the `post` object above no lesson or course wrapper.
-
----
-
-## 🔐 Authentication & Private Content
-
-By default, the actor extracts only publicly accessible courses. To access **locked or private courses**, provide your Skool browser cookies.
-
-### How to get your cookies
-
-1. **Install the Cookie-Editor extension**
-   - [Chrome](https://chrome.google.com/webstore/detail/cookie-editor/hlkenndednhfkekhgcdicdfddnkalmdm)
-   - [Firefox](https://addons.mozilla.org/en-US/firefox/addon/cookie-editor/)
-
-2. **Log in to Skool**, then navigate to your community
-
-3. **Open Cookie-Editor** → click **Export** → copy the JSON
-
-4. **Paste into the `cookies` field** in actor input:
-```json
-{
-  "cookies": [
-    { "name": "session", "value": "your-session-value", "domain": ".skool.com" },
-    { "name": "__stripe_mid", "value": "...", "domain": ".skool.com" }
-  ]
-}
-```
-
-> ⚠️ Cookies expire. If extraction fails with 403 errors, export fresh cookies and re-run.
+Returns just the `post` object above — no lesson or course wrapper.
 
 ---
 
@@ -238,7 +249,7 @@ Each downloaded file is referenced by `kvKey` on its parent attachment or resour
 
 ---
 
-## 🎬 Downloading Videos (Manual Future Feature)
+## 🎬 Downloading Videos (Manual / Future Feature)
 
 The actor extracts `hostedVideo.playbackUrl` and `post.videos[].playbackUrl` for every lesson.
 
@@ -249,25 +260,30 @@ The actor extracts `hostedVideo.playbackUrl` and `post.videos[].playbackUrl` for
 ## 🛠️ Troubleshooting
 
 ### No data extracted / empty dataset
-- Community may require login provide cookies
-- URL format may be wrong check the [URL Modes](#-url-modes--four-ways-to-scope-your-extraction) table
+- Community may require login — provide your email + password or browser cookies
+- URL format may be wrong — check the [URL Modes](#-url-modes--four-ways-to-scope-your-extraction) table
 - Community slug is case-sensitive: `my-community` not `My-Community`
 
 ### `descriptionText` is empty
-- Some lessons genuinely have no description this is normal
+- Some lessons genuinely have no description — this is normal
 - If you expect a description, verify it's visible on the Skool lesson page when logged in
 
 ### Downloads fail with 403
-- Assets hosted on external CDNs (e.g. giphy.com) may block direct downloads these are skipped automatically
-- Skool assets (`assets.skool.com`) should always work; if they fail, try providing cookies
+- Assets hosted on external CDNs (e.g. giphy.com) may block direct downloads — these are skipped automatically
+- Skool assets (`assets.skool.com`) should always work; if they fail, try providing credentials or refreshing your cookies
 
 ### Locked courses skipped
-- Provide browser cookies from an account with access to those courses
+- Provide email + password, or browser cookies from an account with access to those courses
+- If using cookies, make sure they haven't expired — export fresh ones and re-run
 - Only courses where `hasAccess: 1` are extracted
 
-### Rate limiting / slow runs
-- Increase `requestDelayMs` to `2500` or `3000`
-- Large communities (100+ lessons) can take 10–20 minutes with the default delay
+### Login fails with correct credentials
+- Double-check there are no extra spaces in the email or password fields
+- Try the browser cookies method as a fallback
+
+### Rate limiting / Cloudflare blocks
+- The actor uses a built-in request delay between API calls to avoid triggering rate limits
+- If you still see blocks, try providing fresh browser cookies or re-running after a few minutes
 
 ---
 
