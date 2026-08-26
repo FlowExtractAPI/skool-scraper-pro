@@ -156,24 +156,45 @@ Each discovered community includes its slug, URL, display name, description, mem
 
 Needed for private/level-gated content, or if you want Comments/Courses requests to run under your own account rather than anonymously.
 
-| Method | How to use | When to use |
+| Method | How to use | Status |
 |---|---|---|
-| **Email + Password** (recommended) | Enter credentials in input | Easiest and most reliable |
-| **Browser Cookies** | Export from your browser session | Use if login fails, or for advanced cases |
-| **None** | Leave blank | Public communities only |
+| **Browser Cookies** (recommended) | Paste your `auth_token` cookie | ✅ Works — one cookie lasts about a year |
+| **Email + Password** | Enter credentials in input | ⚠️ Currently blocked by Skool — see below |
+| **None** | Leave blank | Public content only |
 
 Tried in this order automatically: email + password, then cookies, then public access.
+
+> ### ⚠️ Email + password sign-in is currently unavailable
+> Skool has placed a browser challenge in front of its sign-in endpoint, and it now
+> rejects sign-in requests from outside a real browser **before your credentials are
+> ever read**. This is not a wrong-password problem, and re-entering them will not help.
+>
+> **Use the Cookies field instead** — it gives exactly the same access. If you enter an
+> email and password anyway, the run does **not** fail: it tells you what happened and
+> continues with whatever access it still has. The field stays in place for when Skool
+> reopens that endpoint.
+
+### 🔓 What you get without authentication
+Public lessons still return their title, course, section, position and dates — but Skool
+serves the **body** of a lesson only to members. Without a cookie you will see empty
+`resources`, no `lessonVideo`, and no description images. If files and videos are why
+you're here, supply a cookie.
 
 ### 🔒 Credential Security
 `password` and `cookies` are marked as **secret inputs** on the Apify platform  encrypted at rest the moment you save them, decrypted only inside the actor's own execution environment, and never written to logs or shown in the Console. If accessed directly from storage, only ciphertext is visible. Nothing here is specific to this actor  it's the same protection Apify applies to every secret input field, isolated per user and per actor.
 
-### 🍪 How to export your cookies (optional)
+### 🍪 How to get your cookie (recommended path)
 1. Install the [Cookie-Editor extension](https://chrome.google.com/webstore/detail/cookie-editor/hlkenndednhfkekhgcdicdfddnkalmdm) (Chrome) or [equivalent for Firefox](https://addons.mozilla.org/en-US/firefox/addon/cookie-editor/)
 2. Log in to `skool.com` and open your community
 3. Open the extension → click **Export**
 4. Copy the JSON and paste it into the `cookies` field
 
-> ⚠️ Cookies expire over time. If extraction starts failing on content that used to work, export fresh cookies and re-run.
+Only the `auth_token` cookie actually matters — exporting everything is simply easier
+than hunting for it.
+
+> 🔁 Skool issues that cookie with about a **one-year** lifetime, so in practice you paste
+> it once and forget about it. If extraction starts failing on content that used to work,
+> export a fresh one and re-run.
 
 ### 🔒 What happens with locked/private content
 If a post or community genuinely requires membership you don't have, the actor returns a clear, immediate error explaining that authentication or membership is required  rather than hanging, retrying forever, or silently returning nothing.
@@ -184,6 +205,56 @@ If a post or community genuinely requires membership you don't have, the actor r
 
 - **Resumable runs**: if a run is interrupted  a platform restart, a timeout, or you stopping it yourself  starting it again picks up close to where it left off instead of starting over from scratch. This applies across every section: classroom/lesson progress, feed pagination, and comment-thread pagination are all checkpointed as the run goes.
 - **Automatic handling of temporary blocks**: occasional anonymous-request blocks are retried automatically before any error is surfaced to you.
+
+---
+
+## 💵 Pricing
+
+You pay per result, not per minute — nothing is charged for the actor thinking, waiting,
+or retrying. Every charge is tied to something delivered, and **anything that fails or
+returns nothing is not charged at all**.
+
+| You get | You pay (Free plan) | Per 1,000 |
+|---|---|---|
+| A lesson | $0.0100 | $10.00 |
+| A community feed post | $0.0050 | $5.00 |
+| A comment | $0.0012 | $1.20 |
+| A discovered community | $0.0060 | $6.00 |
+| A downloaded file (PDF, template, image) | $0.0025 | $2.50 |
+| A Skool-hosted video passed to the downloader | $0.0080 | — |
+| Starting the actor | $0.0080 | — |
+
+Prices drop by roughly **3.5×** on paid Apify plans — a lesson costs $0.0028 and a comment
+$0.00034 at the top tier.
+
+### What a real run costs
+
+| Run | Free plan | Top tier |
+|---|---|---|
+| One lesson with 8 attached templates | $0.038 | $0.011 |
+| A 25-lesson course with files and videos | $0.53 | $0.15 |
+| 1,000 comments from one post | $1.21 | $0.34 |
+| 500 community feed posts | $2.51 | $0.70 |
+| 100 discovered communities | $0.61 | $0.17 |
+
+### Nothing is charged as a bundle
+A lesson with no attachments costs one lesson charge. A lesson with fourteen PDFs costs
+one lesson charge plus fourteen file charges — you pay for what actually arrives. Files
+that fail to download, external links that aren't files, and videos embedded from YouTube
+or Loom are never charged.
+
+### Videos
+Skool-hosted videos are fetched by a separate download service, which bills you for the
+download itself. The charge above covers only stream resolution and quality selection on
+this side. All in, an 85 MB 1080p lesson video works out to roughly **1.7¢** on the Free
+plan. Videos embedded from YouTube, Loom or Vimeo are returned as metadata and cost
+nothing extra.
+
+### Setting a limit
+Use **Maximum cost per run** to cap any run. The limit is applied *before* extraction
+starts: the actor works out how much your budget covers and scales the run down to fit,
+rather than starting work it cannot finish. If the cap is too small for even one result,
+the run ends cleanly and tells you — it doesn't fail or charge you.
 
 ---
 
@@ -306,12 +377,12 @@ Each downloaded file is referenced by a `kvKey` (or `downloadUrl`/`direct_downlo
 
 - 🌐 **Website**: [flowextractapi.com](https://flowextractapi.com)
 - 📧 **Email**: [flowextractapi@outlook.com](mailto:flowextractapi@outlook.com)
-- 🙋 **Apify Profile**: [dz_omar](https://apify.com/dz_omar?fpr=smcx63)
+- 🙋 **Apify Profile**: [FlowExtract API](https://apify.com/dz_omar?fpr=smcx63)
 - 💬 **GitHub**: [FlowExtractAPI](https://github.com/FlowExtractAPI)
 
 ### Social Media
 - 💼 **LinkedIn**: [flowextract-api](https://www.linkedin.com/in/flowextract-api/)
-- 🐦 **Twitter**: [@FlowExtractAPI](https://x.com/@FlowExtractAPI)
+- 🐦 **Twitter**: [@FlowExtractAPI](https://x.com/FlowExtractAPI)
 - 📱 **Facebook**: [flowextractapi](https://www.facebook.com/flowextractapi)
 
 ---
@@ -331,7 +402,6 @@ Each downloaded file is referenced by a `kvKey` (or `downloadUrl`/`direct_downlo
 ### 🛠️ Developer Tools
 - **[Universal Downloader](https://apify.com/dz_omar/universal-downloader?fpr=smcx63)**  Download any file type with proxy support
 - **[Ultimate Screenshot](https://apify.com/dz_omar/ultimate-screenshot?fpr=smcx63)**  Advanced website screenshot tool
-- **[n8n Workflow Server](https://apify.com/dz_omar/n8n-workflow-server?fpr=smcx63)**  Run n8n automation on Apify
 
 ### 📱 Social & Ads
 - **[Facebook Ads Scraper Pro](https://apify.com/dz_omar/facebook-ads-scraper-pro?fpr=smcx63)**  Facebook Ad Library extraction
