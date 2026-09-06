@@ -15,7 +15,7 @@ The actor is organized into four sections. Fill in only the one(s) relevant to w
 | 📚 **Courses & Classroom** | Extract a community's courses, lessons, videos, and resources  or its full post feed |
 | 💬 **Comments** | Pull a specific post's full content plus its comment thread |
 | 🔍 **Discover Communities** | Browse or search `skool.com/discovery` to find communities by category, keyword, or filtered URL |
-| 🔐 **Authentication** | Optional email+password or browser cookies, shared by every section above that needs it |
+| 🔐 **Authentication** | Optional browser cookies, shared by every section above that needs it |
 
 A typical workflow spans separate runs: use **🔍 Discover Communities** to find a community → **📚 Courses & Classroom** to extract its content → copy a post's URL from the results → **💬 Comments** to pull that post's comment thread.
 
@@ -148,7 +148,9 @@ Maximum communities returned **per search** (per Discovery URL, per category sea
 ### Output
 Each discovered community includes its slug, URL, display name, description, member count, membership/pricing info, and logo  ready to feed into **Courses & Classroom** on a later run.
 
-> ℹ️ This section works without providing any credentials below  Discovery normally challenges anonymous requests, but the actor handles that automatically.
+> ℹ️ Discovery challenges anonymous requests, so this section needs a cookie in the
+> **Authentication** section below. Built-in access that avoided this is temporarily
+> paused for the same reason direct sign-in is — see the note below.
 
 ---
 
@@ -156,23 +158,15 @@ Each discovered community includes its slug, URL, display name, description, mem
 
 Needed for private/level-gated content, or if you want Comments/Courses requests to run under your own account rather than anonymously.
 
-| Method | How to use | Status |
+| Method | How to use | Gets you |
 |---|---|---|
-| **Browser Cookies** (recommended) | Paste your `auth_token` cookie | ✅ Works — one cookie lasts about a year |
-| **Email + Password** | Enter credentials in input | ⚠️ Currently blocked by Skool — see below |
+| **Browser Cookies** | Paste your exported cookies | Everything your account can see |
 | **None** | Leave blank | Public content only |
 
-Tried in this order automatically: email + password, then cookies, then public access.
-
-> ### ⚠️ Email + password sign-in is currently unavailable
-> Skool has placed a browser challenge in front of its sign-in endpoint, and it now
-> rejects sign-in requests from outside a real browser **before your credentials are
-> ever read**. This is not a wrong-password problem, and re-entering them will not help.
->
-> **Use the Cookies field instead** — it gives exactly the same access. If you enter an
-> email and password anyway, the run does **not** fail: it tells you what happened and
-> continues with whatever access it still has. The field stays in place for when Skool
-> reopens that endpoint.
+> 🔄 **Direct sign-in is temporarily paused.** Skool changed how its sign-in endpoint
+> works, so this actor authenticates with a browser cookie for now. It takes about a
+> minute to set up (steps below) and one cookie lasts roughly a year. We're working on
+> restoring one-step sign-in and will bring it back once it's reliable.
 
 ### 🔓 What you get without authentication
 Public lessons still return their title, course, section, position and dates — but Skool
@@ -181,9 +175,9 @@ serves the **body** of a lesson only to members. Without a cookie you will see e
 you're here, supply a cookie.
 
 ### 🔒 Credential Security
-`password` and `cookies` are marked as **secret inputs** on the Apify platform  encrypted at rest the moment you save them, decrypted only inside the actor's own execution environment, and never written to logs or shown in the Console. If accessed directly from storage, only ciphertext is visible. Nothing here is specific to this actor  it's the same protection Apify applies to every secret input field, isolated per user and per actor.
+`cookies` is marked as a **secret input** on the Apify platform  encrypted at rest the moment you save it, decrypted only inside the actor's own execution environment, and never written to logs or shown in the Console. If accessed directly from storage, only ciphertext is visible. Nothing here is specific to this actor  it's the same protection Apify applies to every secret input field, isolated per user and per actor.
 
-### 🍪 How to get your cookie (recommended path)
+### 🍪 How to get your cookie
 1. Install the [Cookie-Editor extension](https://chrome.google.com/webstore/detail/cookie-editor/hlkenndednhfkekhgcdicdfddnkalmdm) (Chrome) or [equivalent for Firefox](https://addons.mozilla.org/en-US/firefox/addon/cookie-editor/)
 2. Log in to `skool.com` and open your community
 3. Open the extension → click **Export**
