@@ -148,9 +148,7 @@ Maximum communities returned **per search** (per Discovery URL, per category sea
 ### Output
 Each discovered community includes its slug, URL, display name, description, member count, membership/pricing info, and logo  ready to feed into **Courses & Classroom** on a later run.
 
-> ℹ️ Discovery challenges anonymous requests, so this section needs a cookie in the
-> **Authentication** section below. Built-in access that avoided this is temporarily
-> paused for the same reason direct sign-in is — see the note below.
+> ℹ️ This section works without providing any credentials below  Discovery normally challenges anonymous requests, but the actor handles that automatically.
 
 ---
 
